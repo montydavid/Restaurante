@@ -14,7 +14,11 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->decimal('total',10,2);
+            $table->string('route')->nullable();
             $table->unsignedBigInteger('customers_id');
+            $table->dateTime('dateOrder');
+            $table->string('status')->nullable();
+            $table->string('registerby')->nullable();
             $table->timestamps();
             $table->foreign('customers_id')
             ->references('id')->on('customers');

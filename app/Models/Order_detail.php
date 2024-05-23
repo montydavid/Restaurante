@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Order_detail extends Model
 {
     use HasFactory;
-    protected $fillable = ['products_id', 'orders_id', 'quantity', 'subtotal'];
-    protected $guarded = ['id','created_at', 'updated_at'];
+    protected $fillable = ['products_id', 'order_id', 'quantity', 'subtotal','registerby'];
+    protected $guarded = ['id','created_at', 'updated_at','registerby'];
 
     public function products() {
         return $this->belongsTo(Product::class);

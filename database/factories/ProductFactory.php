@@ -25,6 +25,8 @@ class ProductFactory extends Factory
             'description' => $this->faker->sentence, 
             'price' => $this->faker->randomFloat(2, 0, 1000),
             'stock' => $this->faker->randomNumber(2), 
+            'status' => 1,
+            'registerby' => 1,
             //'created_at' => $this->faker->randomNumber(2),
             //'updated_at' => $this->faker->randomNumber(2),
         ];

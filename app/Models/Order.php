@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
-    protected $fillable = ['total', 'customers_id'];
-    protected $guarded = ['id','created_at', 'updated_at'];
+    protected $fillable = ['total','route', 'customers_id', 'dateOrder', 'status','registerby'];
+    protected $guarded = ['id', 'route', 'created_at', 'updated_at', 'dateOrder', 'status','registerby'];
 
     public function order_details() {
         return $this->hasMany(Order_detail::class);

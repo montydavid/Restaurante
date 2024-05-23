@@ -66,8 +66,10 @@
 									</div>
 								</div>
 
-								<input type="hidden" class="form-control" name="estado" value="1">
-								<input type="hidden" class="form-control" name="registradopor" value="{{ Auth::user()->id }}">
+								
+
+								<input type="hidden" class="form-control" name="status" value="1">
+								<input type="hidden" class="form-control" name="registerby" value="{{ Auth::user()->id }}">
 							</div>
 							<div class="card-footer">
 								<div class="row">

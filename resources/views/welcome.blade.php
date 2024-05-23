@@ -32,7 +32,7 @@
             @endif
 
             <div class="">
-                <img src="{{asset('backend/dist/img/restaurante.jpeg')}}" alt="" height="600" width="600">
+                <img src="{{asset('backend/dist/img/restaurante.jpeg')}}" alt="" height="800" width="800">
             </div>
         </div>
     </body>

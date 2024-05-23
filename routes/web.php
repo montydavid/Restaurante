@@ -46,7 +46,6 @@ Route::get('/', function () {
 });*/
 
 Auth::routes();
-
 Route::group(['middleware' => ['auth']], function(){
     //Panel de control
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -54,6 +53,10 @@ Route::group(['middleware' => ['auth']], function(){
     Route::resource('products', ProductController::class);
     Route::resource('customers', CustomerController::class);
     Route::resource('orders', OrderController::class);
+    //cambio
+    Route::get('changestatusproduct', [ProductController::class, 'changestatusproduct'])->name('changestatusproduct');
+    Route::get('changestatuscustomer', [CustomerController::class, 'changestatuscustomer'])->name('changestatuscustomer');
+    Route::get('changestatusorder', [OrderController::class, 'changestatusorder'])->name('changestatusorder');
 });
 
 
