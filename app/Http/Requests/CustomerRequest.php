@@ -24,6 +24,7 @@ class CustomerRequest extends FormRequest
         if(request()->isMethod('post')){
             return [
                 'name' => 'required|string|max:255',
+                'document' => 'nullable',
                 'photo' => 'nullable|mimes:jpg,jpeg,png|max:3000',
                 'address' => 'nullable',
                 'phone' => 'nullable',
@@ -33,6 +34,7 @@ class CustomerRequest extends FormRequest
         }elseif(request()->isMethod('put')){
             return [
                 'name' => 'required|string|max:255',
+                'document' => 'nullable',
                 'photo' => 'nullable|mimes:jpg,jpeg,png|max:3000',
                 'address' => 'nullable',
                 'phone' => 'nullable',

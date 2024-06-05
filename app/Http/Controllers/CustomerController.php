@@ -50,6 +50,7 @@ class CustomerController extends Controller
 
             $customer = new Customer();
 			$customer->name = $request->name;
+            $customer->document = $request->document;
             $customer->photo = $imagename;
 			$customer->address = $request->address;
 			$customer->phone = $request->phone;
@@ -101,6 +102,7 @@ class CustomerController extends Controller
 
 
         $customer->name = $request->name;
+        $customer->document = $request->document;
         $customer->photo = $imagename;
 		$customer->address = $request->address;
 		$customer->phone = $request->phone;

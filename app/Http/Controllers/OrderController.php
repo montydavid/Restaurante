@@ -10,6 +10,10 @@ use App\Models\Order_detail;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Http\Requests\OrderRequest;
+use Illuminate\Support\Facades\DB;
+use \Exception;
+use PDF;
+
 class OrderController extends Controller
 {
     /**
@@ -28,8 +32,6 @@ class OrderController extends Controller
      */
     public function create()
     {
-        //$orders = Order::where('status', '=', '1')->orderBy('name')->get();
-        //return view('orders.create');
         $customers = Customer::where('status', '=', '1')->get();
         $products = Product::where('status', '=', '1')->orderBy('name')->get();
         return view('orders.create', compact("customers", "products"));
@@ -38,68 +40,65 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(OrderRequest $request)
     {
-        /*$order -> total = $request->total;
-        $order -> customers_id = $request->customers_id;
-        $order -> route = $request->route;
-        $order -> status = 1;
-        $order -> registerby = $request->user()->id;
-        $order -> save();
-
-        $idorder = $order->id;
-        $cont = 0;
-        while($cont < count($item)){
-            $order_detail = new Order_detail();
-            $$order_detail-> order_id = $idorder;
-        }*/
-
-        /*$order = Order::create([
-            'dateOrder' => Carbon::now()->toDateTimeString(),
-            'total' => Product::find($request->product)->price,
-            'route' => "Por hacer",
-            'customers_id' => Customer::find($request->customer)->id,
-            'status' => 1,
-            'registerby'=> $request->user()->id,
-        ]);
-        
-        $order->save();
-
-        return redirect()->route("orders.index")->with("successMsg", "La orden fue creada.");*/
-
-        $order = Order::create([
-            'dateOrder' => Carbon::now()->toDateTimeString(),
-            'total' => 0,
-            'route' => "Por hacer",
-            'customers_id' => Customer::find($request->customer)->id,
-            'status' => 1,
-        ]);
-
-        $order->status = 1;
-        $order->registerby = $request->registerby;
-        $total = 0;
-
-        $rawProductId = $request->product_id;
-        $rawQuantity = $request->quantity;
-        for ($i = 0; $i < count($rawProductId); $i++) {
-            $product = Product::find($rawProductId[$i]);
-            $quantity = $rawQuantity[$i];
-            $subtotal = $product->price * $quantity;
-
-            $order->order_details()->create([
-                'quantity' => $quantity,
-                'subtotal' => $subtotal,
-                'products_id' => $product->id,
-                'order_id' => $order->id,
+        DB::beginTransaction();
+        try{
+           
+            $order = Order::create([
+                'dateOrder' => Carbon::now()->toDateTimeString(),
+                'total' => $request->total,
+                'route' => "Por hacer",
+                'customers_id' => Customer::find($request->customer)->id,
+                'status' => 1,
+                'registerby' => $request->registerby
             ]);
+    
+    
+            $rawProductId = $request->product_id;
+            $rawQuantity = $request->quantity;
+            for ($i = 0; $i < count($rawProductId); $i++) {
+                $product = Product::find($rawProductId[$i]);
+                $quantity = $rawQuantity[$i];
+                $subtotal = $product->price * $quantity;
+    
+                $order->order_details()->create([
+                    'quantity' => $quantity,
+                    'subtotal' => $subtotal,
+                    'products_id' => $product->id,
+                    'order_id' => $order->id,
+                ]);
+            }
+            $order->save();
 
-            $total += $subtotal;
+            // Generate bill (PDF).
+            $pdfName = 'uploads/bills/bill_' . $order->id . '_' . Carbon::now()->format('YmdHis') . '.pdf';
+
+            $order = Order::find($order->id);
+            $customer = Customer::where("id", $order->customers_id)->first();
+            $details = Order_detail::with('products')
+                ->where('order_details.order_id', '=', $order->id)
+                ->get();
+
+            $pdf = PDF::loadView('orders.bill', compact("order", "customer", "details"))
+                ->setPaper('letter')
+                ->output();
+
+            file_put_contents($pdfName, $pdf);
+
+            $order->route = $pdfName;
+            $order->save();
+
+            DB::commit();
+            return redirect()->route("orders.index")->with("successMsg", "La orden fue creada.");
+
+        }
+        catch (Exception $e){
+            return redirect()->back()->with('successMsg', 'Error al registrar la informacion');
+            DB::rollback();
         }
 
-        $order->total = $total;
-        $order->save();
-
-        return redirect()->route("orders.index")->with("successMsg", "La orden fue creada.");
+        
     }
 
     /**
@@ -118,7 +117,6 @@ class OrderController extends Controller
         /*$order = Order::select('customers.name', 'orders.id', 'orders.dateOrder', 'orders.total')
         ->join('customers', 'orders.customers_id', '=', 'customers.id')
         ->where('orders.id', '=', $id)
-        ->first();
         $details = Order_detail::with('products')
             ->where('order_details.order_id', '=', $id)
             ->get();

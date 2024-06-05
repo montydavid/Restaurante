@@ -17,9 +17,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         
-        /*Order::factory(455)->create();
+        /*Order::factory(100)
+            ->has(Order_detail::factory()->count(1))
+            ->create();
         Customer::factory(7)->create();
         Product::factory(55)->create();*/
-
+        Order::factory(1)->create();
     }
 }

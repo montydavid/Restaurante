@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Agregar orden')
+@section('title', 'Add order')
 
 @section('content')
 
@@ -28,9 +28,10 @@
                                                         style="color:red;">(*)</strong></label>
                                                 <select type="text" class="form-control select2" name="customer"
                                                     value="{{ old('customer') }}">
-                                                    <option value="-1">Seleccione el cliente</option>
+                                                    <option value="-1">Ingrese el cliente</option>
                                                     @foreach ($customers as $customer)
                                                         <option value="{{ $customer->id }}">{{ $customer->name }}
+                                                            ({{ $customer->document }})
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -48,7 +49,8 @@
 
                                     <div class="row mt-2" data-details-field=true>
                                         <div class="col-3 mt-4">
-                                            <select id="product" class="form-control select2" name="product_id[]">
+                                            <select id="product" class="form-control select2">
+                                                <option value="-">Seleccione un producto</option>
                                                 @foreach ($products as $product)
                                                     <option value="{{ $product->id }}" data-price="{{ $product->price }}"
                                                         data-name="{{ $product->name }}">
@@ -59,16 +61,15 @@
                                         </div>
                                         <div class="col-2">
                                             <label for="quantity">Cantidad</label>
-                                            <input type="number" name="quantity[]">
+                                            <input type="number" name="quantity">
                                         </div>
                                         <div class="col-2">
                                             <label for="price">Precio</label>
-                                            <input type="number" name="price" readonly
-                                                value="{{ $products[0]->price }}">
+                                            <input type="number" name="price" readonly value="">
                                         </div>
                                         <div class="col-2">
                                             <label for="subtotal">Subtotal</label>
-                                            <input type="number" name="subtotal" value="subtotal" readonly>
+                                            <input type="number" name="subtotal" readonly>
                                         </div>
                                         <div class="col-2 ml-5 mt-3">
                                             <button class="btn btn-primary" id="add-btn">
@@ -86,7 +87,6 @@
                                                         <th scope="col">Cantidad</th>
                                                         <th scope="col">Precio</th>
                                                         <th scope="col">Subtotal</th>
-                                                        <th scope="col">Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -133,81 +133,115 @@
 
 @push('scripts')
     <script>
-        function generateHTML(name, quantity, price) {
-            const subtotal = quantity * price;
-            return $.parseHTML(`
+        class Order {
+            constructor(id, name, quantity, price) {
+                this.id = id;
+                this.name = name;
+                this.price = price;
+                this.quantity = quantity;
+            }
+
+            get subtotal() {
+                return this.price * this.quantity;
+            }
+
+            generateHTML() {
+                return `
                 <tr>
-                    <td>${name}</td>
-                    <td>${quantity}</td>
-                    <td>$${price}</td>
-                    <td>$${subtotal}</td>
-                    <td>TODO</td>
+                    <td>${this.name}</td>
+                    <td>${this.quantity}</td>
+                    <td>$${this.price}</td>
+                    <td>$${this.subtotal}</td>
+                    <input hidden name="product_id[]" value="${this.id}">
+                    <input hidden name="quantity[]" value="${this.quantity}">
                 </tr>
-                `)
+                `
+            }
+        }
+
+        // Nodes (DOM).
+        let nodeInputPrice = document.querySelector('[name="price"]')
+        let nodeInputQuantity = document.querySelector('[name="quantity"]')
+        let nodeInputSubtotal = document.querySelector('[name="subtotal"]')
+        let nodeInputTotal = document.querySelector('[name="total"]')
+        let nodeListProducts = document.querySelector('#list-products')
+
+        function clearInputFields() {
+            nodeInputPrice.value = ''
+            nodeInputQuantity.value = ''
+            nodeInputSubtotal.value = ''
+        }
+
+        const orders = []
+
+        function pushOrder(order) {
+            orders.push(Object.assign(Object.create(Object.getPrototypeOf(order)), order))
+
+            let total = 0;
+            for (let order of orders) {
+                total += order.subtotal
+            }
+
+            document.querySelector('#total-text').innerText = `Total: $${total}`
+            document.querySelector('[name="total"]').value = total
+            nodeInputTotal.value = total
+
+            nodeListProducts.innerHTML += order.generateHTML()
+        }
+
+        let currentOrder = new Order("", "", 0, 0)
+
+        function updateCurrentOrder() {
+            nodeInputPrice.value = currentOrder.price
+            nodeInputQuantity.value = currentOrder.quantity
+            nodeInputSubtotal.value = currentOrder.subtotal
         }
 
         $(document).ready(function() {
-            let listProducts = $('#list-products')
-            let addButton = $('#add-btn')
+            $('.select2').select2()
 
             let productSelect = $('#product')
             productSelect.select2();
 
-            let productPrice = $('[name="price"]')
-            let productQuantity = $('[name="quantity"]')
-            let productSubtotal = $('[name="subtotal"]')
-
-            let total = 0;
-
-            let totalText = $('#total-text')
-            let totalInput = $('[name="total"]')
-
-            addButton.on("click", (e) => {
+            $('#add-btn').on("click", (e) => {
                 e.preventDefault()
 
-                quantity = parseInt(productQuantity.val())
-                price = parseInt(productPrice.val())
+                pushOrder(currentOrder)
 
-                total += price * quantity
-
-                totalText.text(Total: ${total})
-                totalInput.val(total)
-
-                listProducts.append(generateHTML(
-                    productSelect.find(':selected').data('name'),
-                    quantity,
-                    price,
-                ))
+                clearInputFields()
+                productSelect.val('-')
+                productSelect.trigger('change');
             })
-
-            function updateSubtotal() {
-                productSubtotal.val(parseInt(productPrice.val()) * parseInt(productQuantity.val()))
-            }
 
             productSelect.on('select2:select', function(e) {
-                let price = productSelect.find(':selected').data('price');
-                console.log(price)
+                currentOrder.id = parseInt(productSelect.find(':selected').val())
+                currentOrder.name = productSelect.find(':selected').data('name')
+                currentOrder.price = parseInt(productSelect.find(':selected').data('price'))
+                currentOrder.quantity = 0
 
-                productPrice.val(price)
-
-                updateSubtotal()
+                updateCurrentOrder()
             });
-
-            productQuantity.on('input', function(e) {
-                updateSubtotal()
-            })
-
-
-            updateSubtotal()
         });
+
+        nodeInputQuantity.addEventListener('input', () => {
+            currentOrder.quantity = parseInt(nodeInputQuantity.value)
+            updateCurrentOrder()
+        })
     </script>
-
-<script>
- $(document).ready(function() {
-    $('.select2').select2();
+    <script>
+        $(document).ready(function() {
+        $('.select2').select2();
    
-})
+        })
 
-</script>
+    </script>
 @endpush
+
+
+
+
+
+
+
+
 

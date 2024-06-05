@@ -22,7 +22,7 @@ class OrderFactory extends Factory
     {
         return [
             'dateOrder' => $this->faker->dateTime(),
-            'total' => $this->faker->randomFloat(2, 0, 1000),
+            'total' => $this->faker->randomFloat(0, 10000, 500000),
             'route'=> $this->faker->colorName(),
             'customers_id'=>\App\Models\Customer::factory(),
             'status' => 1,

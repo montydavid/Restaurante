@@ -12,6 +12,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">Detalles de la orden</h5>
+                                <p class="card-text"><strong># de la orden:</strong> {{ $order->id }}</p>
                                 <p class="card-text"><strong>Fecha:</strong> {{ $order->dateOrder }}</p>
                                 <p class="card-text"><strong>Total:</strong> ${{ $order->total }}</p>
                             </div>
@@ -54,6 +55,14 @@
 
                             </tbody>
                         </table>
+                    </div>
+                    <div class="card-footer mt-4">
+                                    <div class="row">
+                                        <div class="mx-auto">
+                                            <a href="{{ route('orders.index') }}"
+                                                class="btn btn-danger btn-block btn-flat">Regresar</a>
+                                        </div>
+                                    </div>
                     </div>
                 </div>
             </div>

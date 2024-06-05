@@ -21,6 +21,8 @@ class CustomerFactory extends Factory
     {
         return [
             'name' => $this->faker->name, 
+            'photo' => randomPhoto(),
+            'document' => $this->faker->unique()->numberBetween(1234567890, 2134567890),
             'address' => $this->faker->address, 
             'phone' => $this->faker->phoneNumber,
             'email' => $this->faker->unique()->safeEmail,
@@ -28,4 +30,9 @@ class CustomerFactory extends Factory
             'registerby' => 1,
         ];
     }
+}
+
+function randomPhoto(): string
+{
+    return "photos/" . rand(1, 6) . ".jpg";
 }

@@ -22,6 +22,7 @@ class ProductFactory extends Factory
     {
         return [
             'name' => $this->faker->word, 
+            'image' => randomImage(),
             'description' => $this->faker->sentence, 
             'price' => $this->faker->randomFloat(2, 0, 1000),
             'stock' => $this->faker->randomNumber(2), 
@@ -31,4 +32,9 @@ class ProductFactory extends Factory
             //'updated_at' => $this->faker->randomNumber(2),
         ];
     }
+}
+
+function randomImage(): string
+{
+    return "Images/" . rand(1, 6) . ".jpg";
 }

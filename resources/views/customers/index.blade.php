@@ -32,6 +32,7 @@
                   <tr>
                     <th width="10px">ID</th>
                     <th>Name</th>
+                    <th>Document</th>
                     <th>Photo</th>
                     <th>Address</th>
                     <th>Phone</th>
@@ -45,6 +46,7 @@
                   <tr>
                     <td>{{$customer->id}}</td>
                     <td>{{$customer->name}}</td>
+                    <td>{{$customer->document}}</td>
                     <td>@if ($customer->photo!=null)
 											<center><p><img class="img-responsive img-thumbnail" src="{{ asset('uploads/customers/'.$customer->photo) }}" style="height: 70px; width: 70px;" alt=""></p></center>
 										@elseif ($customer->photo==null)
